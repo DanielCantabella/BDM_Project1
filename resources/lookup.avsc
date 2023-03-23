@@ -1,0 +1,14 @@
+{"namespace": "lookup.avro",
+ "type": "record",
+ "name": "Lookup",
+ "fields": [
+     {"name": "district", "type": ["string", "null"]},
+     {"name": "neighborhood",  "type": ["string", "null"]},
+     {"name": "district_n_reconciled", "type": ["string", "null"]},
+     {"name": "district_n", "type": ["string", "null"]},
+     {"name": "district_id", "type": ["string", "null"]},
+     {"name": "neighborhood_n_reconciled", "type": ["string", "null"]},
+     {"name": "neighborhood_n", "type": ["string", "null"]},
+     {"name": "neighborhood_id", "type": ["string", "null"]}
+ ]
+}

@@ -1,0 +1,74 @@
+{"namespace": "property.avro",
+ "type": "record",
+ "name": "Property",
+ "fields": [
+     {"name": "propertyCode", "type": ["string", "null"]},
+     {"name": "thumbnail",  "type": ["string", "null"]},
+     {"name": "externalReference", "type": ["string", "null"]},
+     {"name": "numPhotos", "type": ["int", "null"]},
+     {"name": "floor", "type": ["string", "null"]},
+     {"name": "price", "type": ["float", "null"]},
+     {"name": "propertyType", "type": ["string", "null"]},
+     {"name": "operation", "type": ["string", "null"]},
+     {"name": "size", "type": ["float", "null"]},
+     {"name": "exterior", "type": ["boolean", "null"]},
+     {"name": "rooms", "type": ["int", "null"]},
+     {"name": "bathrooms", "type": ["int", "null"]},
+     {"name": "address", "type": ["string", "null"]},
+     {"name": "province", "type": ["string", "null"]},
+     {"name": "municipality", "type": ["string", "null"]},
+     {"name": "district", "type": ["string", "null"]},
+     {"name": "country", "type": ["string", "null"]},
+     {"name": "neighborhood", "type": ["string", "null"]},
+     {"name": "latitude", "type": ["double", "null"]},
+     {"name": "longitude", "type": ["double", "null"]},
+     {"name": "showAddress", "type": ["boolean", "null"]},
+     {"name": "url", "type": ["string", "null"]},
+     {"name": "distance", "type": ["string", "null"]},
+     {"name": "hasVideo", "type": ["boolean", "null"]},
+     {"name": "status", "type": ["string", "null"]},
+     {"name": "newDevelopment", "type": ["boolean", "null"]},
+     {"name": "hasLift", "type": ["boolean", "null"]},
+     {
+      "name": "parkingSpace",
+      "type": [{
+        "type": "record",
+        "name": "parkingSpace",
+        "fields": [
+          { "name": "hasParkingSpace", "type": ["boolean", "null"] },
+          { "name": "isParkingSpaceIncludedInPrice", "type": ["boolean", "null"] },
+          { "name": "parkingSpacePrice", "type": ["float", "null"] }
+        ]
+       },"null"]
+     },
+     {"name": "newDevelopmentFinished", "type": ["boolean", "null"]},
+     {"name": "priceByArea", "type": ["double", "null"]},
+     {
+      "name": "detailedType",
+      "type": {
+        "type": "record",
+        "name": "DetailedType",
+        "fields": [
+            {"name": "typology", "type": ["string","null"]},
+            {"name": "subTypology", "type": ["string","null"]}
+          ]
+        }
+      },
+      {
+      "name": "suggestedTexts",
+      "type": {
+        "type": "record",
+        "name": "SuggestedTexts",
+        "fields": [
+          {"name": "subtitle", "type": ["string","null"]},
+          {"name": "title", "type": ["string","null"]}
+        ]
+      }
+    },
+    {"name": "hasPlan", "type": ["boolean","null"]},
+    {"name": "has3DTour", "type": ["boolean","null"]},
+    {"name": "has360", "type": ["boolean","null"]},
+    {"name": "hasStaging", "type": ["boolean","null"]},
+    {"name": "topNewDevelopment", "type": ["boolean","null"]}
+ ]
+}
