@@ -23,7 +23,7 @@ if __name__ == '__main__':
     if args.format =='avro' and args.mode == 'write':
         writeAvro(str(args.inputOption), str(args.outputName))
     if args.format =='parquet' and args.mode == 'write':
-        writeParquet(str(args.inputOption), str(args.outputName))
+        writeParquet(str(args.inputOption))
     if args.format == 'avro' and args.mode == 'read':
         readAvro(str(args.readFile))
     if args.format == 'parquet' and args.mode == 'read':

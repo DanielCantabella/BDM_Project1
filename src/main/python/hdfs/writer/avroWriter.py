@@ -14,52 +14,15 @@ import csv
 PROJECT_DIRECTORY = "/Users/danicantabella/Desktop/BDM/Labs/LandingZoneProject"
 
 
-def writeAvro(inputArg, outputFile):
-
-    if inputArg == "property":
-        schemaFile = PROJECT_DIRECTORY + "/resources/property.avsc"
-        dataFolder = PROJECT_DIRECTORY + "/data/idealista"
-
-
-    elif inputArg == "income":
-        schemaFile = PROJECT_DIRECTORY + "/resources/income.avsc"
-        dataFolder = PROJECT_DIRECTORY + "/data/opendatabcn-income"
-
-
-    elif inputArg == "lookup":
-        schemaFile = PROJECT_DIRECTORY + "/resources/lookup.avsc"
-        dataFolder = PROJECT_DIRECTORY + "/data/lookup_tables"
-
-    if schemaFile is None:
-        raise ValueError("Invalid inputArg provided")
-
-    avroOutputFilePath = PROJECT_DIRECTORY + "/outputFiles/avroFiles/" + outputFile \
-                         # + ".avro"
-
-    # LOAD THE SCHEMA
+def file2avro(inputArg, schemaName, rawDataFolderName, outputFolderName, outputFile=""):
+    schemaFile = PROJECT_DIRECTORY + "/resources/" + schemaName + ".avsc"
+    dataFolder = PROJECT_DIRECTORY + "/data/" + rawDataFolderName
+    avroOutputFilePath = PROJECT_DIRECTORY + "/outputFiles/avroFiles/" + outputFolderName + outputFile
     schema = avro.schema.parse(open(schemaFile, "rb").read())
 
-    # CREATE AVRO FILE
-    # writer = DataFileWriter(open(avroOutputFilePath, "wb"), DatumWriter(), schema)
-    # LOAD DATA
-    #### EVERYTHING IN THE SAME .avro FILE
-    # for filename in os.listdir(dataFolder):
-    #     file = os.path.join(dataFolder, filename)
-    #     print(file)
-    #     if os.path.isfile(file):
-    #         with open(file, 'r') as dataFile:
-    #             if inputArg == "property":
-    #                 data = json.load(dataFile)
-    #             elif inputArg == "income" or inputArg == "lookup":
-    #                 data = csv.DictReader(dataFile)
-    #             for record in data:
-    #                 writer.append(record)
-    # writer.close()
-
-    #### IN DIFFERENT .avro FILES
     for filename in os.listdir(dataFolder):
         file = os.path.join(dataFolder, filename)
-        writer = DataFileWriter(open(avroOutputFilePath+str(filename.split('.')[0])+".avro", "wb"), DatumWriter(), schema)
+        writer = DataFileWriter(open(avroOutputFilePath + str(filename.split('.')[0]) + ".avro", "wb"), DatumWriter(), schema)
         if os.path.isfile(file):
             with open(file, 'r') as dataFile:
                 if inputArg == "property":
@@ -69,6 +32,27 @@ def writeAvro(inputArg, outputFile):
                 for record in data:
                     writer.append(record)
         writer.close()
+def writeAvro(inputArg):
+
+    if inputArg == "property":
+        schemaName = "property"
+        rawDataFolderName = outputFolderName = "idealista/"
+
+
+    elif inputArg == "income":
+        schemaName = "income"
+        rawDataFolderName = outputFolderName = "opendatabcn-income/"
+
+
+    elif inputArg == "lookup":
+        schemaName = "lookup"
+        rawDataFolderName = outputFolderName = "lookup_tables/"
+
+    if schemaName is None:
+        raise ValueError("Invalid inputArg provided")
+
+    file2avro(inputArg, schemaName, rawDataFolderName, outputFolderName)
+
 
 if __name__ == '__main__':
-    writeAvro("property", "property__")
+    writeAvro("property")
