@@ -8,14 +8,19 @@ from src.utils.hdfsUtils import upload_folder_to_hdfs
 
 
 # Directories
-PROJECT_DIRECTORY = "/Users/danicantabella/Desktop/BDM/Labs/LandingZoneProject"
-
-
+PROJECT_DIRECTORY = os.environ.get('PROJECT_DIRECTORY')
 def file2avro(inputArg, schemaName, rawDataFolderName, outputFolderName, outputFile=""):
     schemaFile = PROJECT_DIRECTORY + "/resources/" + schemaName + ".avsc"
     dataFolder = PROJECT_DIRECTORY + "/data/" + rawDataFolderName
     avroOutputFilePath = PROJECT_DIRECTORY + "/outputFiles/avroFiles/" + outputFolderName + outputFile
-    schema = avro.schema.parse(open(schemaFile, "rb").read())
+    if not os.path.exists(dataFolder):
+        raise Exception(f"The directory {dataFolder} does not exist. Please create it.")
+    if not os.path.exists(os.path.dirname(schemaFile)):
+        raise Exception(f"The directory {os.path.dirname(schemaFile)} does not exist. Please create it.")
+    else:
+        schema = avro.schema.parse(open(schemaFile, "rb").read())
+
+    os.makedirs(os.path.dirname(avroOutputFilePath), exist_ok=True)
 
     for filename in os.listdir(dataFolder):
         file = os.path.join(dataFolder, filename)
@@ -48,7 +53,7 @@ def writeAvro(inputArg):
         raise ValueError("Invalid inputArg provided")
 
     localFilePath = file2avro(inputArg, schemaName, rawDataFolderName, outputFolderName)
-    upload_folder_to_hdfs(localFilePath, "/home/bdm/BDM_Software/hadoop/bin/hdfs")
+    # upload_folder_to_hdfs(localFilePath, "/home/bdm/BDM_Software/hadoop/bin/hdfs")
 
 
 if __name__ == '__main__':
