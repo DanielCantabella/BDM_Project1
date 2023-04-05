@@ -4,6 +4,7 @@ import pyarrow
 import pandas as pd
 
 def readSeq(fileName):
+    pass
     #HERE THE CODE TO READ SEQUENCE FILES
 
 if __name__ == '__main__':
