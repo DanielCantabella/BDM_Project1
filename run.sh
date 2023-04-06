@@ -36,17 +36,17 @@ echo "idealista .parquet files saved locally in path: ${PROJECT_DIRECTORY}/outpu
 echo "idealista .parquet files uploaded in HDFS path: ${HDFS_DIRECTORY}parquetFiles/idealista/"
 
 # _____________CREATE AND UPLOAD SEQUENCEFILE FILES_________________
-echo "CREATING AND LOADING SEQUENCE FILES IN HDFS..."
-# Convert opendatabcn-income CSV data to Sequence files
-python main.py write sequence -i income
-echo "opendatabcn-income .seq files saved locally in path: ${PROJECT_DIRECTORY}/outputFiles/sequenceFiles/opendatabcn-income/"
-echo "opendatabcn-income .seq files uploaded in HDFS path: ${HDFS_DIRECTORY}sequenceFiles/opendatabcn-income/"
-# Convert lookup_tables CSV data to Sequence files
-python main.py write sequence -i lookup
-echo "lookup_tables .seq files saved locally in path: ${PROJECT_DIRECTORY}/outputFiles/sequenceFiles/lookup_tables/"
-echo "lookup_tables .seq files uploaded in HDFS path: ${HDFS_DIRECTORY}sequenceFiles/lookup_tables/"
-# Convert idealista JSON data to Sequence files
-python main.py write sequence -i property
-echo "idealista .seq files saved locally in path: ${PROJECT_DIRECTORY}/outputFiles/sequenceFiles/idealista/"
-echo "idealista .seq files uploaded in HDFS path: ${HDFS_DIRECTORY}sequenceFiles/idealista/"
+#echo "CREATING AND LOADING SEQUENCE FILES IN HDFS..."
+## Convert opendatabcn-income CSV data to Sequence files
+#python main.py write sequence -i income
+#echo "opendatabcn-income .seq files saved locally in path: ${PROJECT_DIRECTORY}/outputFiles/sequenceFiles/opendatabcn-income/"
+#echo "opendatabcn-income .seq files uploaded in HDFS path: ${HDFS_DIRECTORY}sequenceFiles/opendatabcn-income/"
+## Convert lookup_tables CSV data to Sequence files
+#python main.py write sequence -i lookup
+#echo "lookup_tables .seq files saved locally in path: ${PROJECT_DIRECTORY}/outputFiles/sequenceFiles/lookup_tables/"
+#echo "lookup_tables .seq files uploaded in HDFS path: ${HDFS_DIRECTORY}sequenceFiles/lookup_tables/"
+## Convert idealista JSON data to Sequence files
+#python main.py write sequence -i property
+#echo "idealista .seq files saved locally in path: ${PROJECT_DIRECTORY}/outputFiles/sequenceFiles/idealista/"
+#echo "idealista .seq files uploaded in HDFS path: ${HDFS_DIRECTORY}sequenceFiles/idealista/"
 
