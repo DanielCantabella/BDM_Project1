@@ -5,10 +5,12 @@ import json
 import os
 import csv
 from src.utils.hdfsUtils import upload_folder_to_hdfs
+from src.utils.hdfsUtils import delete_hdfs_folder
 
 
 # Directories
 PROJECT_DIRECTORY = os.environ.get('PROJECT_DIRECTORY')
+HDFS_DIRECTORY = os.environ.get('HDFS_DIRECTORY')
 def file2avro(inputArg, schemaName, rawDataFolderName, outputFolderName, outputFile=""):
     schemaFile = PROJECT_DIRECTORY + "/resources/" + schemaName + ".avsc"
     dataFolder = PROJECT_DIRECTORY + "/data/" + rawDataFolderName
@@ -52,8 +54,9 @@ def writeAvro(inputArg):
     if schemaName is None:
         raise ValueError("Invalid inputArg provided")
 
-    localFilePath = file2avro(inputArg, schemaName, rawDataFolderName, outputFolderName)
-    # upload_folder_to_hdfs(localFilePath, "/home/bdm/BDM_Software/hadoop/bin/hdfs")
+    avroLocalOutputFilePath = file2avro(inputArg, schemaName, rawDataFolderName, outputFolderName)
+    delete_hdfs_folder(HDFS_DIRECTORY+"avroFiles/"+outputFolderName) # Allows to overwrite the files in HDFS. Comment if you don't want to overwrite.
+    upload_folder_to_hdfs(avroLocalOutputFilePath, HDFS_DIRECTORY+"avroFiles/"+outputFolderName)
 
 
 if __name__ == '__main__':
