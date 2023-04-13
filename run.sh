@@ -38,6 +38,10 @@ echo "lookup_tables .parquet files uploaded in HDFS path: ${HDFS_DIRECTORY}parqu
 python main.py write parquet -i property
 echo "idealista .parquet files saved locally in path: ${PROJECT_DIRECTORY}/outputFiles/parquetFiles/idealista/"
 echo "idealista .parquet files uploaded in HDFS path: ${HDFS_DIRECTORY}parquetFiles/idealista/"
+# Convert opendatabcn-immigration API data to Parquet files
+python main.py write parquet -i property
+echo "opendatabcn-immigration .parquet files saved locally in path: ${PROJECT_DIRECTORY}/outputFiles/parquetFiles/opendatabcn-immigration/"
+echo "opendatabcn-immigration .parquet files uploaded in HDFS path: ${HDFS_DIRECTORY}parquetFiles/opendatabcn-immigration/"
 
 # _____________CREATE AND UPLOAD SEQUENCEFILE FILES_________________
 #echo "CREATING AND LOADING SEQUENCE FILES IN HDFS..."
