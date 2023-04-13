@@ -1,12 +1,24 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import input_file_name
 import os
-from src.utils.hdfsUtils import upload_folder_to_hdfs
-from src.utils.hdfsUtils import delete_hdfs_folder
+from src.utils.hdfsUtils import upload_folder_to_hdfs, delete_hdfs_folder
+from src.writer.avroWriter import getApiUrls, getDataFromApiUrl
+import pyarrow.parquet as pq
+import pyarrow as pa
+import pandas as pd
 
 # Directories
 PROJECT_DIRECTORY = os.environ.get('PROJECT_DIRECTORY')
 HDFS_DIRECTORY = os.environ.get('HDFS_DIRECTORY')
+
+def api2parquet(data,outputFolderName, outputFile=""):
+    parquetOutputFilePath = PROJECT_DIRECTORY + "/outputFiles/parquetFiles/" + outputFolderName + outputFile
+    os.makedirs(os.path.dirname(parquetOutputFilePath), exist_ok=True)
+    df = pd.DataFrame(data)
+    year = data[0].get("Any") #Take the year of the first trow, for example.
+    filename = f"{year}_taxa_immigracio"
+    pq.write_table(pa.Table.from_pandas(df), parquetOutputFilePath + filename +'.parquet')
+    return parquetOutputFilePath
 def csv2parquet(dataName,outputFolderName, outputFile=""):
     dataFolder = PROJECT_DIRECTORY + "/data/" + dataName
     if not os.path.exists(dataFolder):
@@ -48,10 +60,21 @@ def writeParquet(inputArg):
         dataName = outputFolderName = "lookup_tables"
         parquetLocalOutputFilePath = csv2parquet(dataName,outputFolderName)
 
+    elif inputArg == "immigration":
+        outputFolderName = "opendatabcn-immigration/"
+        fileUrls=getApiUrls('https://opendata-ajuntament.barcelona.cat/data/es/dataset/est-demo-taxa-immigracio/')
+        for fileUrl in fileUrls:
+            apiData = getDataFromApiUrl(fileUrl)
+            if apiData is None: #2018 data seems to not have an api option
+                continue
+            parquetLocalOutputFilePath = api2parquet(apiData, outputFolderName)
+
+
     delete_hdfs_folder(HDFS_DIRECTORY+"parquetFiles/"+outputFolderName)  # Allows to overwrite the files in HDFS. Comment if you don't want to overwrite.
     upload_folder_to_hdfs(parquetLocalOutputFilePath, HDFS_DIRECTORY+"parquetFiles/"+outputFolderName)
 
 if __name__ == '__main__':
-    writeParquet("property")
-    writeParquet("lookup")
-    writeParquet("income")
+    writeParquet("immigration")
+    # writeParquet("property")
+    # writeParquet("lookup")
+    # writeParquet("income")
