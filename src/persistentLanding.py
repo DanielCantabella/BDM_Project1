@@ -10,110 +10,79 @@ import happybase
 import json
 
 CONFIG_ROUTE = 'utils/config.cfg'
-# HDFS_PATH = '/home/bdm/BDM_Software/hadoop/bin'
-HDFS_PATH = '/user/bdm/Temporal_LZ/avroFiles/'
+
 
 # Get the server info
 config = configparser.ConfigParser()
 config.read(CONFIG_ROUTE)
 host = config.get('data_server', 'host')
 user = config.get('data_server', 'user')
-pwd = config.get('data_server', 'password')
+tablename = config.get('hbase', 'tablename')
+
+# Get the routes
+hdfs_path = config.get('routes', 'hdfs')
 
 host_hdfs = 'http://'+ host +':9870'
 
 def create_table_if_not_exists(table):
     if table.encode() not in connection.tables():
-        connection.create_table(table, {'cf': {}})
-        print('tabla creada')
+        connection.create_table(table, {'data': dict(), 'metadata': dict()})
 
 # Connect to hdfs
 client = InsecureClient(host_hdfs, user=user)
-files = client.list(HDFS_PATH)
+files = client.list(hdfs_path)
 
 # Connect to HBase
 connection = happybase.Connection(host=host, port=9090)
 connection.open()
+create_table_if_not_exists(tablename)
+table = connection.table(tablename)
 
 for folder in files:
-    path = HDFS_PATH + folder
-    # the folder is equivalent to the table name
-    create_table_if_not_exists(folder)
-    table = connection.table(folder)
+    path = hdfs_path + folder
     for file in client.list(path):
         filename = '/'.join([path, file])
-        print(filename)
         with client.read(filename) as reader:
             contents = reader.read()
             bytes_reader = io.BytesIO(contents)
             datafile_reader = avro.datafile.DataFileReader(bytes_reader, avro.io.DatumReader())
             schema = json.loads(datafile_reader.schema)
-            print(schema)
-            for i, record in enumerate(datafile_reader):
-                # print(record)
-                row_key = (file.split('.')[0]+'_'+str(i+1)).encode()  # use id field as row key
-                data = {}
-                for field in schema['fields']:
-                    data['cf:'+field['name']] = str(record[field['name']]).encode()  # convert all fields to bytes
-                table.put(row_key, data)
-                # print(data)
+
+            # generate key
+            source = folder
+            file_ext = schema['name'].split('.')[1] if '.' in schema['name'] else 'no_extension'
+            file_name = file.split('.')[0] if '.' in file else file
+            row_key = '$'.join([source, file_ext, file_name])
+            row_value = dict()
+            data = list()
+            # add file as data
+            for record in datafile_reader:
+                data.append(record)
+            row_value['data:file'] = bytes(json.dumps(data), encoding='utf-8')
+            # add schema as metadata
+            row_value['metadata:schema'] = bytes(json.dumps(schema['fields']), encoding='utf-8')
+            # insert column
+            table.put(row_key, row_value)
             datafile_reader.close()
-        break
-    break
+        # break
+    # break
 
 
+print(connection.tables())
+
+# table = connection.table('datalake')
+#
+# for key, data in table.scan():
+#     print(f"Row key: {key}")
+#     for column, value in data.items():
+#         print(f"    Column: {column} => Value: {value}")
+
+# connection.delete_table('datalake', disable=True)
 # print(connection.tables())
 
-table = connection.table('idealista')
-
-for key, data in table.scan():
-    print(f"Row key: {key}")
-    for column, value in data.items():
-        print(f"    Column: {column} => Value: {value}")
 
 # print(table.families())
 #
 # # Close connection to HBase
 connection.close()
-
-
-# table = connection.table('table_test')
-
-# scan table and print values
-# for key, data in table.scan():
-#     print(f"Row key: {key}")
-#     for column, value in data.items():
-#         print(f"    Column: {column} => Value: {value}")
-#
-# # Check if table exists
-# table_name = 'table_test'
-#
-#
-# table = connection.table(table_name)
-
-
-
-
-
-# # Execute SSH to the server
-# client = connect_ssh(host, user, pwd)
-# stdin, stdout, stderr = client.exec_command("cd BDM_Software/hadoop/bin && ./hdfs dfs -ls")
-# print(stdout.read().decode())
-#
-#
-# # Exectute SFTP
-#
-# # Put file
-# # sftp_put_file(client, remote_file_path, local_file_path)
-#
-# # Get file
-# remote_path = 'BDM_Software/hadoop/bin'
-# local_path = 'temp/aux_1.avro'
-# # sftp_get_file(client, remote_path, local_path):
-#
-# # Close SHH
-# close_ssh(client)
-
-
-
 
