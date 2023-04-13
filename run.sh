@@ -19,6 +19,10 @@ echo "lookup_tables .avro files uploaded in HDFS path: ${HDFS_DIRECTORY}avroFile
 python main.py write avro -i property
 echo "idealista .avro files saved locally in path: ${PROJECT_DIRECTORY}/outputFiles/avroFiles/idealista/"
 echo "idealista .avro files uploaded in HDFS path: ${HDFS_DIRECTORY}avroFiles/idealista/"
+# Convert opendatabcn-immigration API data to Avro files
+python main.py write avro -i immigration
+echo "opendatabcn-immigration .avro files saved locally in path: ${PROJECT_DIRECTORY}/outputFiles/avroFiles/opendatabcn-immigration/"
+echo "opendatabcn-immigration .avro files uploaded in HDFS path: ${HDFS_DIRECTORY}avroFiles/opendatabcn-immigration/"
 
 # _____________CREATE AND UPLOAD PARQUET FILES______________________
 echo "CREATING AND LOADING PARQUET FILES IN HDFS..."

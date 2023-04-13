@@ -10,7 +10,7 @@ parser = argparse.ArgumentParser()
 # writeGroup = parser.add_mutually_exclusive_group()
 parser.add_argument('mode', choices=['write', 'read'], help='Choose write or read mode')
 parser.add_argument('format', choices=['avro', 'parquet', 'sequence'], help='Choose avro or parquet formats')
-parser.add_argument('-i', '--inputOption', choices=['income','property','lookup'], help='Input file options: {income, property, lookup}')
+parser.add_argument('-i', '--inputOption', choices=['income','property','lookup', 'immigration'], help='Input file options: {income, property, lookup, immigration}')
 parser.add_argument('-r', '--readFile', help='Reading file path.')
 
 args = parser.parse_args()
