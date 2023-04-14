@@ -1,6 +1,6 @@
 {"namespace": "immigration.avro",
   "type": "record",
-  "name": "ImmigrationBarcelona",
+  "name": "ImmigrationBarcelona.csv",
   "fields": [
       {"name": "_id", "type": "int"},
       {"name": "_full_text", "type": ["string", "null"]},

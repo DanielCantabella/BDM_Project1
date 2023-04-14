@@ -1,6 +1,6 @@
 {"namespace": "lookup.avro",
  "type": "record",
- "name": "Lookup",
+ "name": "Lookup.json",
  "fields": [
      {"name": "district", "type": ["string", "null"]},
      {"name": "neighborhood",  "type": ["string", "null"]},

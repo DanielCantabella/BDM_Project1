@@ -1,6 +1,6 @@
 {"namespace": "property.avro",
  "type": "record",
- "name": "Property",
+ "name": "Property.json",
  "fields": [
      {"name": "propertyCode", "type": ["string", "null"]},
      {"name": "thumbnail",  "type": ["string", "null"]},

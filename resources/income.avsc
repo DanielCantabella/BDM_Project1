@@ -1,6 +1,6 @@
 {"namespace": "income.avro",
   "type": "record",
-  "name": "IncomeBarcelona",
+  "name": "IncomeBarcelona.csv",
   "fields": [
       {"name": "Any", "type": ["string", "null"]},
       {"name": "Codi_Districte", "type": ["string", "null"]},
