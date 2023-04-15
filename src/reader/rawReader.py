@@ -70,16 +70,11 @@ def api2avro(json_list, schemaName):
     return avro_output_file_content
 
 def file2avro(inputArg, schemaName, rawDataFolderName, outputFolderName):
-    schemaFile = PROJECT_DIRECTORY + "/resources/" + schemaName + ".avsc"
+
     dataFolder = PROJECT_DIRECTORY + "/data/" + rawDataFolderName
 
     if not os.path.exists(dataFolder):
         raise Exception(f"The directory {dataFolder} does not exist. Please create it.")
-    if not os.path.exists(os.path.dirname(schemaFile)):
-        raise Exception(f"The directory {os.path.dirname(schemaFile)} does not exist. Please create it.")
-    else:
-        schema = avro.schema.parse(open(schemaFile, "rb").read())
-
 
     for filename in os.listdir(dataFolder):
         file = os.path.join(dataFolder, filename)
@@ -88,16 +83,7 @@ def file2avro(inputArg, schemaName, rawDataFolderName, outputFolderName):
         modification_time_datetime = datetime.datetime.fromtimestamp(modification_time).strftime("$%Y-%m-%d$%H-%M-%S")
         if os.path.isfile(file):
             with open(file, 'r') as dataFile:
-                # Create an in-memory file object
-                avro_output_file = io.BytesIO()
-                # Create an Avro DatumWriter
-                datum_writer = avro.io.DatumWriter(schema)
-                # Create an Avro BinaryEncoder
-                avro_encoder = avro.io.BinaryEncoder(avro_output_file)
                 if inputArg == "property":
-                    json_data = json.load(dataFile)
-                    for json_obj in json_data:
-                        datum_writer.write(json_obj, avro_encoder)
                     outputHDFSfolderName = HDFS_DIRECTORY + "avroFiles/"  + "idealista$" + "json$" + filename.split(".")[0] + modification_time_datetime + ".avro"
                     # outputHDFSfolderName = HDFS_DIRECTORY + "avroFiles/" + outputFolderName + "idealista$" + "json$" + filename.split(".")[0] + modification_time_datetime + ".avro"
 
@@ -143,7 +129,7 @@ def writeAvro(inputArg):
             if apiData is None: #2018 data seems to not have an api option
                 continue
             memoryFile = api2avro(apiData, schemaName)
-            outputHDFSfolderName = HDFS_DIRECTORY+"avroFiles/" + "opendatabcn-immigration$" + "json$" + filenames[index]+ ".avro"
+            outputHDFSfolderName = HDFS_DIRECTORY+"raw/" + "opendatabcn-immigration$" + "json$" + filenames[index]+ ".avro"
             # outputHDFSfolderName = HDFS_DIRECTORY+"avroFiles/" + outputFolderName + "opendatabcn-immigration$" + "json$" + filenames[index]+ ".avro"
             upload_memory_to_hdfs(memoryFile, outputHDFSfolderName)
 
