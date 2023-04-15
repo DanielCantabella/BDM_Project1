@@ -14,6 +14,10 @@ import io
 from src.utils.hdfsUtils import upload_memory_to_hdfs
 import time
 import datetime
+from fastavro import writer, parse_schema
+from avro.datafile import DataFileWriter
+import datafile
+
 # Directories
 PROJECT_DIRECTORY = os.environ.get('PROJECT_DIRECTORY')
 HDFS_DIRECTORY = os.environ.get('HDFS_DIRECTORY')
@@ -54,12 +58,17 @@ def api2avro(data, schemaName):
         raise Exception(f"The directory {os.path.dirname(schemaFile)} does not exist. Please create it.")
     else:
         schema = avro.schema.parse(open(schemaFile, "rb").read())
-    avro_output_file = io.BytesIO() # Create an in-memory file object
-    datum_writer = avro.io.DatumWriter(schema) # Create an Avro DatumWriter
-    avro_encoder = avro.io.BinaryEncoder(avro_output_file) # Create an Avro BinaryEncoder
+    # avro_output_file = io.BytesIO() # Create an in-memory file object
+    # datum_writer = avro.io.DatumWriter(schema) # Create an Avro DatumWriter
+    # avro_encoder = avro.io.BinaryEncoder(avro_output_file) # Create an Avro BinaryEncoder
+    avro_output_file = io.BytesIO()  # Create an in-memory file object
+    avro_writer = DataFileWriter(avro_output_file, avro.io.DatumWriter(), schema)
     # Parse JSON string
     for item in data:
-        datum_writer.write(item, avro_encoder)
+        # datum_writer.write(item, avro_encoder)
+        avro_writer.append(item)
+    avro_writer.flush()
+    avro_output_file.seek(0)
     # Get the contents of the in-memory file object
     avro_output_file_content = avro_output_file.getvalue()
     # Return the Avro content as bytes
@@ -75,6 +84,7 @@ def file2avro(inputArg, schemaName, rawDataFolderName, outputFolderName):
         raise Exception(f"The directory {os.path.dirname(schemaFile)} does not exist. Please create it.")
     else:
         schema = avro.schema.parse(open(schemaFile, "rb").read())
+        # schema = parse_schema(open(schemaFile, "rb").read())
 
     for filename in os.listdir(dataFolder):
         file = os.path.join(dataFolder, filename)
@@ -84,8 +94,7 @@ def file2avro(inputArg, schemaName, rawDataFolderName, outputFolderName):
         if os.path.isfile(file):
             with open(file, 'r') as dataFile:
                 avro_output_file = io.BytesIO() # Create an in-memory file object
-                datum_writer = avro.io.DatumWriter(schema) # Create an Avro DatumWriter
-                avro_encoder = avro.io.BinaryEncoder(avro_output_file) # Create an Avro BinaryEncoder
+                avro_writer = DataFileWriter(avro_output_file, avro.io.DatumWriter(), schema)
 
                 dataType = file.split(".")[-1]
                 if dataType == "json":
@@ -94,13 +103,18 @@ def file2avro(inputArg, schemaName, rawDataFolderName, outputFolderName):
                     data = csv.DictReader(dataFile)
                 else:
                     data = dataFile
-
                 for item in data:
-                    datum_writer.write(item, avro_encoder)
-                avro_output_file_content = avro_output_file.getvalue()
+                    # datum_writer.write(item, avro_encoder)
+                    avro_writer.append(item)
+                avro_writer.flush()
+                avro_output_file.seek(0)
+
+
+
+                avro_output_file_content =  avro_output_file.getvalue()
 
                 outputHDFSfolderName = HDFS_DIRECTORY + "avroFiles/"  + rawDataFolderName[:-1] + "%" + dataType + "%" + filename.split(".")[0] + "%" + date + "%" + time + ".avro"
-                # outputHDFSfolderName = HDFS_DIRECTORY + "avroFiles/" + outputFolderName + "opendatabcn-income$" + "csv$" + filename.split(".")[0] + modification_time_datetime + ".avro"
+                # outputHDFSfolderName = HDFS_DIRECTORY + "avroFiles/" + outputFolderName +  filename.split(".")[0] + ".avro"
                 upload_memory_to_hdfs(avro_output_file_content, outputHDFSfolderName)
 
 
@@ -130,7 +144,7 @@ def writeAvro(inputArg):
                 continue
             memoryFile = api2avro(apiData, schemaName)
             outputHDFSfolderName = HDFS_DIRECTORY+"avroFiles/" + outputFolderName[:-1] + "%" + "json%" + filenames[index]+ ".avro"
-            # outputHDFSfolderName = HDFS_DIRECTORY+"avroFiles/" + outputFolderName + "opendatabcn-immigration$" + "json$" + filenames[index]+ ".avro"
+            # outputHDFSfolderName = HDFS_DIRECTORY+"avroFiles/" + outputFolderName + filenames[index]+ ".avro"
             upload_memory_to_hdfs(memoryFile, outputHDFSfolderName)
 
 
