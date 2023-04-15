@@ -4,7 +4,7 @@ from avro.io import DatumWriter
 import json
 import os
 import csv
-from src.utils.hdfsUtils import upload_folder_to_hdfs
+from src.utils.hdfsUtils import upload_file_to_hdfs
 from src.utils.hdfsUtils import delete_hdfs_folder
 import urllib.request
 import json
@@ -48,22 +48,18 @@ def getDataFromApiUrl(fileLink):
         print("No API for URL:" + url)
 
 
-def api2avro(json_list, schemaName):
+def api2avro(data, schemaName):
     schemaFile = PROJECT_DIRECTORY + "/resources/" + schemaName + ".avsc"
     if not os.path.exists(os.path.dirname(schemaFile)):
         raise Exception(f"The directory {os.path.dirname(schemaFile)} does not exist. Please create it.")
     else:
         schema = avro.schema.parse(open(schemaFile, "rb").read())
-    # Create an in-memory file object
-    avro_output_file = io.BytesIO()
-    # Create an Avro DatumWriter
-    datum_writer = avro.io.DatumWriter(schema)
-    # Create an Avro BinaryEncoder
-    avro_encoder = avro.io.BinaryEncoder(avro_output_file)
+    avro_output_file = io.BytesIO() # Create an in-memory file object
+    datum_writer = avro.io.DatumWriter(schema) # Create an Avro DatumWriter
+    avro_encoder = avro.io.BinaryEncoder(avro_output_file) # Create an Avro BinaryEncoder
     # Parse JSON string
-    for json_obj in json_list:
-        # Write JSON object to Avro content in memory
-        datum_writer.write(json_obj, avro_encoder)
+    for item in data:
+        datum_writer.write(item, avro_encoder)
     # Get the contents of the in-memory file object
     avro_output_file_content = avro_output_file.getvalue()
     # Return the Avro content as bytes
@@ -80,41 +76,31 @@ def file2avro(inputArg, schemaName, rawDataFolderName, outputFolderName):
     else:
         schema = avro.schema.parse(open(schemaFile, "rb").read())
 
-
     for filename in os.listdir(dataFolder):
         file = os.path.join(dataFolder, filename)
         modification_time = os.path.getmtime(file)
-
-        modification_time_datetime = datetime.datetime.fromtimestamp(modification_time).strftime("$%Y-%m-%d$%H-%M-%S")
+        modification_time_datetime = datetime.datetime.fromtimestamp(modification_time).strftime("%Y-%m-%d_%H-%M-%S")
+        date, time = modification_time_datetime.split('_')
         if os.path.isfile(file):
             with open(file, 'r') as dataFile:
-                # Create an in-memory file object
-                avro_output_file = io.BytesIO()
-                # Create an Avro DatumWriter
-                datum_writer = avro.io.DatumWriter(schema)
-                # Create an Avro BinaryEncoder
-                avro_encoder = avro.io.BinaryEncoder(avro_output_file)
-                if inputArg == "property":
-                    json_data = json.load(dataFile)
-                    for json_obj in json_data:
-                        datum_writer.write(json_obj, avro_encoder)
-                    outputHDFSfolderName = HDFS_DIRECTORY + "avroFiles/"  + "idealista$" + "json$" + filename.split(".")[0] + modification_time_datetime + ".avro"
-                    # outputHDFSfolderName = HDFS_DIRECTORY + "avroFiles/" + outputFolderName + "idealista$" + "json$" + filename.split(".")[0] + modification_time_datetime + ".avro"
+                avro_output_file = io.BytesIO() # Create an in-memory file object
+                datum_writer = avro.io.DatumWriter(schema) # Create an Avro DatumWriter
+                avro_encoder = avro.io.BinaryEncoder(avro_output_file) # Create an Avro BinaryEncoder
 
-                elif inputArg == "income" or inputArg == "lookup":
-                    csv_reader = csv.DictReader(dataFile)
-                    for row in csv_reader:
-                        datum_writer.write(row, avro_encoder)
+                dataType = file.split(".")[-1]
+                if dataType == "json":
+                    data = json.load(dataFile)
+                elif dataType == "csv":
+                    data = csv.DictReader(dataFile)
+                else:
+                    data = dataFile
 
-                    if inputArg == "income":
-                        outputHDFSfolderName = HDFS_DIRECTORY + "avroFiles/"  + "opendatabcn-income$" + "csv$" + filename.split(".")[0] + modification_time_datetime + ".avro"
-                        # outputHDFSfolderName = HDFS_DIRECTORY + "avroFiles/" + outputFolderName + "opendatabcn-income$" + "csv$" + filename.split(".")[0] + modification_time_datetime + ".avro"
-                    else:
-                        outputHDFSfolderName = HDFS_DIRECTORY + "avroFiles/" + "lookup_tables$" + "csv$" + filename.split(".")[0] + modification_time_datetime + ".avro"
-                        # outputHDFSfolderName = HDFS_DIRECTORY + "avroFiles/" + outputFolderName + "lookup_tables$" + "csv$" + filename.split(".")[0] + modification_time_datetime + ".avro"
-
+                for item in data:
+                    datum_writer.write(item, avro_encoder)
                 avro_output_file_content = avro_output_file.getvalue()
-                # delete_hdfs_folder(outputHDFSfolderName)  # Allows to overwrite the files in HDFS. Comment if you don't want to overwrite.
+
+                outputHDFSfolderName = HDFS_DIRECTORY + "avroFiles/"  + rawDataFolderName[:-1] + "%" + dataType + "%" + filename.split(".")[0] + "%" + date + "%" + time + ".avro"
+                # outputHDFSfolderName = HDFS_DIRECTORY + "avroFiles/" + outputFolderName + "opendatabcn-income$" + "csv$" + filename.split(".")[0] + modification_time_datetime + ".avro"
                 upload_memory_to_hdfs(avro_output_file_content, outputHDFSfolderName)
 
 
@@ -143,7 +129,7 @@ def writeAvro(inputArg):
             if apiData is None: #2018 data seems to not have an api option
                 continue
             memoryFile = api2avro(apiData, schemaName)
-            outputHDFSfolderName = HDFS_DIRECTORY+"avroFiles/" + "opendatabcn-immigration$" + "json$" + filenames[index]+ ".avro"
+            outputHDFSfolderName = HDFS_DIRECTORY+"avroFiles/" + outputFolderName[:-1] + "%" + "json%" + filenames[index]+ ".avro"
             # outputHDFSfolderName = HDFS_DIRECTORY+"avroFiles/" + outputFolderName + "opendatabcn-immigration$" + "json$" + filenames[index]+ ".avro"
             upload_memory_to_hdfs(memoryFile, outputHDFSfolderName)
 

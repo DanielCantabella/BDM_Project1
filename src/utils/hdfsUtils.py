@@ -44,12 +44,12 @@ def upload_memory_to_hdfs(avro_output_file_content, hdfs_file_path: str):
             hdfs_file.write(avro_output_file_content)
         print("File Uploaded in HDFS: " + str(hdfs_file_path))
     else:
-        pass
-        # print("File already in HDFS: " + str(hdfs_file_path))
+        # pass
+        print("File already in HDFS: " + str(hdfs_file_path))
 
 
 
-def upload_folder_to_hdfs(localFolderName: str, hdfs_folder_path: str, n_threads: int = 1):
+def upload_file_to_hdfs(localFolderName: str, hdfs_folder_path: str, n_threads: int = 1):
     """
     Uploads a folder from a local machine to HDFS.
 
@@ -65,7 +65,8 @@ def upload_folder_to_hdfs(localFolderName: str, hdfs_folder_path: str, n_threads
     if not checkIfExistsInHDFS(hdfs_folder_path):
         client.upload(hdfs_folder_path, localFolderName, n_threads=n_threads)
     else:
-        pass
+        print("File already in HDFS: " + str(hdfs_folder_path))
+        # pass
 
 def checkIfExistsInHDFS(HDFSpath):
     host, port, user = get_server_data(CONFIG_ROUTE)
