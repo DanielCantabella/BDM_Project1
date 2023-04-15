@@ -1,7 +1,7 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import input_file_name
 import os
-from src.utils.hdfsUtils import upload_folder_to_hdfs, delete_hdfs_folder
+from src.utils.hdfsUtils import upload_file_to_hdfs, delete_hdfs_folder
 from src.writer.avroWriter import getApiUrls, getDataFromApiUrl
 import pyarrow.parquet as pq
 import pyarrow as pa

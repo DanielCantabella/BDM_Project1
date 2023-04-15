@@ -20,6 +20,17 @@ import pickle
 # Directories
 PROJECT_DIRECTORY = os.environ.get('PROJECT_DIRECTORY')
 HDFS_DIRECTORY = os.environ.get('HDFS_DIRECTORY')
+
+def get_raw_data(data):
+    output_file = io.BytesIO()  # Create an in-memory file object
+    # Parse JSON string
+    for item in data:
+        output_file.write(bytes(str(item), 'utf-8'))
+    output_file.seek(0)
+    # Get the contents of the in-memory file object
+    output_file_content = output_file.getvalue()
+    # Return the raw data as bytes
+    return output_file_content
 def iterate_directory(directory):
     for item in os.listdir(directory):
         item_path = os.path.join(directory, item)  # Get the full path of the item
@@ -28,10 +39,11 @@ def iterate_directory(directory):
             modification_time = os.path.getmtime(item_path)
             modification_time_datetime = datetime.datetime.fromtimestamp(modification_time).strftime("%Y-%m-%d_%H-%M-%S")
             date, time = modification_time_datetime.split('_')
-            rawDataFolderName = item_path.split("/")[-2]
+            source = item_path.split("/")[-2]
             dataType = item_path.split(".")[-1]
-            outputHDFSfolderName = HDFS_DIRECTORY + "rawFiles/" + rawDataFolderName + "%" + dataType + "%" + item.split(".")[0] + "%" + date + "%" + time + "." + dataType
-            upload_memory_to_hdfs(item_path, outputHDFSfolderName)
+            outputHDFSfolderName = HDFS_DIRECTORY + source + "%" + item.split(".")[0] + "%" + date + "%" + time + "." + dataType
+            # outputHDFSfolderName = HDFS_DIRECTORY + "rawFiles/" + rawDataFolderName + "%" + dataType + "%" + item.split(".")[0] + "%" + date + "%" + time + "." + dataType
+            upload_file_to_hdfs(item_path, outputHDFSfolderName)
 
         # Check if the item is a directory
         elif os.path.isdir(item_path):
@@ -40,40 +52,34 @@ def iterate_directory(directory):
         else:
             print(f'{item} is not a file or directory')
 
-def writeRaw(inputArg):
+def writeRaw(source):
 
-    if inputArg == "property":
-        dataFolder = "idealista"
-    elif inputArg == "income":
-        dataFolder = "opendatabcn-income"
-    elif inputArg == "lookup":
-        dataFolder = "lookup_tables"
-
-    elif inputArg == "immigration":
-        outputFolderName = "opendatabcn-immigration"
+    if source == "opendatabcn-immigration":
         fileUrls , filenames = getApiUrls('https://opendata-ajuntament.barcelona.cat/data/es/dataset/est-demo-taxa-immigracio/')
 
         for index, fileUrl in enumerate(fileUrls):
             apiData = getDataFromApiUrl(fileUrl)
             if apiData is None: #2018 data seems to not have an api option
                 continue
-            bytes_data = pickle.dumps(apiData)
-            outputHDFSfolderName = HDFS_DIRECTORY+"rawFiles/" + outputFolderName + "%" + "json%" + filenames[index]+ ".json"
+            bytes_data = get_raw_data(apiData)
+            outputHDFSfolderName = HDFS_DIRECTORY + source + "%" + filenames[index]+ ".json"
+            # outputHDFSfolderName = HDFS_DIRECTORY+"rawFiles/" + source + "%" + "json%" + filenames[index]+ ".json"
             upload_memory_to_hdfs(bytes_data, outputHDFSfolderName)
 
-
-    if inputArg != "immigration":
-        dataDirectory = PROJECT_DIRECTORY + "/data/" + dataFolder
+    else:
+        dataDirectory = os.path.join(PROJECT_DIRECTORY, "data", source)
         iterate_directory(dataDirectory)
 
 
 
 
-if __name__ == '__main__':
-    # writeRaw("immigration")
-    # writeRaw("property")
-    writeRaw("income")
-    writeRaw("lookup")
-    # iterate_directory(PROJECT_DIRECTORY + "/data/")
+# if __name__ == '__main__':
+    # writeRaw("opendatabcn-immigration")
+    # writeRaw("idealista")
+    # writeRaw("opendatabcn-income")
+    # writeRaw("lookup_tables")
+    # writeRaw("images")
+    # writeRaw("")
+
 
 

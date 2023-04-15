@@ -12,28 +12,7 @@ def get_server_data(cfgFileDirectory):
     return host, port, user
 
 
-# def upload_memory_to_hdfs(avro_output_file_content, hdfs_file_path: str):
-#
-#     host, port, user = get_server_data(CONFIG_ROUTE)
-#     # Set up the HDFS client
-#     client = InsecureClient("http://"+host+":"+port+"/", user=user)
-#     if not client.status(hdfs_file_path, strict=False):
-#         with client.write(hdfs_file_path) as hdfs_file:
-#             hdfs_file.write(avro_output_file_content)
-#     else:
-#         print("File already in HDFS: " + str(hdfs_file_path))
-
-
 def upload_memory_to_hdfs(avro_output_file_content, hdfs_file_path: str):
-    """
-    Uploads a folder from a local machine to HDFS.
-
-    Parameters:
-    remote_uri (str): The URL of the HDFS Namenode on the remote machine.
-    local_folder_path (str): The path of the folder to upload on the local machine.
-    hdfs_folder_path (str): The destination path of the folder on HDFS.
-    n_threads (int): The number of threads to use for parallel upload (default: 5).
-    """
     host, port, user = get_server_data(CONFIG_ROUTE)
     # Set up the HDFS client
     client = InsecureClient("http://"+host+":"+port+"/", user=user)
@@ -49,23 +28,15 @@ def upload_memory_to_hdfs(avro_output_file_content, hdfs_file_path: str):
 
 
 
-def upload_file_to_hdfs(localFolderName: str, hdfs_folder_path: str, n_threads: int = 1):
-    """
-    Uploads a folder from a local machine to HDFS.
-
-    Parameters:
-    remote_uri (str): The URL of the HDFS Namenode on the remote machine.
-    local_folder_path (str): The path of the folder to upload on the local machine.
-    hdfs_folder_path (str): The destination path of the folder on HDFS.
-    n_threads (int): The number of threads to use for parallel upload (default: 5).
-    """
+def upload_file_to_hdfs(localFolderName: str, hdfs_file_path: str, n_threads: int = 1):
     host, port, user = get_server_data(CONFIG_ROUTE)
     # Set up the HDFS client
     client = InsecureClient("http://"+host+":"+port+"/", user=user)
-    if not checkIfExistsInHDFS(hdfs_folder_path):
-        client.upload(hdfs_folder_path, localFolderName, n_threads=n_threads)
+    if not checkIfExistsInHDFS(hdfs_file_path):
+        client.upload(hdfs_file_path, localFolderName, n_threads=n_threads)
+        print("File Uploaded in HDFS: " + str(hdfs_file_path))
     else:
-        print("File already in HDFS: " + str(hdfs_folder_path))
+        print("File already in HDFS: " + str(hdfs_file_path))
         # pass
 
 def checkIfExistsInHDFS(HDFSpath):
@@ -76,16 +47,7 @@ def checkIfExistsInHDFS(HDFSpath):
         return True
     else:
         return False
-# def checkIfExistsInHDFS(HDFSpath):
-#     host, port, user = get_server_data(CONFIG_ROUTE)
-#     # Set up the HDFS client
-#     client = InsecureClient("http://" + host + ":" + port + "/", user=user)
-#     encoded_file_name = urllib.parse.quote(HDFSpath, safe='')
-#     print("ENCODED: " +str(encoded_file_name))
-#     if client.status(encoded_file_name, strict=False):
-#         return True
-#     else:
-#         return False
+
 
 def delete_hdfs_folder(HDFSfolder):
     host, port, user = get_server_data(CONFIG_ROUTE)

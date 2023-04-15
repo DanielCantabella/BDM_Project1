@@ -1,15 +1,13 @@
-{"namespace": "immigration.avro",
+{"namespace": "opendatabcn-income.avro",
   "type": "record",
-  "name": "ImmigrationBarcelona.csv",
+  "name": "IncomeBarcelona.csv",
   "fields": [
-      {"name": "_id", "type": "int"},
-      {"name": "_full_text", "type": ["string", "null"]},
-      {"name": "Nombre", "type": ["string", "null"]},
       {"name": "Any", "type": ["string", "null"]},
       {"name": "Codi_Districte", "type": ["string", "null"]},
       {"name": "Nom_Districte", "type": ["string", "null"]},
       {"name": "Codi_Barri", "type": ["string", "null"]},
       {"name": "Nom_Barri", "type": ["string", "null"]},
-      {"name": "Taxa_mil_hab", "type": ["string", "null"]}
+      {"name": "Població", "type": ["string", "null"]},
+      {"name": "Índex RFD Barcelona = 100", "type": ["string", "null"]}
   ]
 }

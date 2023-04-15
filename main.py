@@ -4,34 +4,58 @@ from src.writer.sequenceFileWriter import writeSeq
 from src.reader.avroReader import readAvro
 from src.reader.parquetReader import readParquet
 from src.reader.sequenceReader import readSeq
+from src.writer.rawWriter import writeRaw
+import os
 import argparse
+
 
 parser = argparse.ArgumentParser()
 # writeGroup = parser.add_mutually_exclusive_group()
 parser.add_argument('mode', choices=['write', 'read'], help='Choose write or read mode')
-parser.add_argument('format', choices=['avro', 'parquet', 'sequence'], help='Choose avro or parquet formats')
-parser.add_argument('-i', '--inputOption', choices=['income','property','lookup', 'immigration'], help='Input file options: {income, property, lookup, immigration}')
+parser.add_argument('format', choices=['avro', 'parquet', 'raw'], help='Choose avro, parquet or raw formats')
+parser.add_argument('-i', '--source', help='Input file options: {opendatabcn-income, idealista, lookup_tables, opendatabcn-immigration}')
 parser.add_argument('-r', '--readFile', help='Reading file path.')
 
 args = parser.parse_args()
 
-# if args.outputName is not None and '.' in args.outputName:
-#     raise ValueError("Invalid outputName argument provided. The output name must not contain any extension")
-# if (not args.readFile.endswith(".avro") and args.format == "avro") or (not args.readFile.endswith(".parquet") and args.format == "parquet"):
-#     raise ValueError("Invalid file type. The file type  must coincide with the format you are reading (e.g. '.parquet' for parquet format and '.avro' for avro format)")
+def ifNotAvroThenLoadRaw(source):
+    try:
+        writeAvro(source)
+    except Exception as e:
+        print(f"Failed to write Avro: {e}. Falling back to raw write.")
+        writeRaw(source)
+
+def ifNotParquetThenLoadRaw(source):
+    try:
+        writeParquet(source)
+    except Exception as e:
+        print(f"Failed to write Parquet: {e}. Falling back to raw write.")
+        writeRaw(source)
 
 if __name__ == '__main__':
+    dataFolders= os.listdir("./data")
     if args.format == 'avro' and args.mode == 'write':
-        writeAvro(str(args.inputOption))
+        if args.source is not None:
+            ifNotAvroThenLoadRaw(str(args.source))
+        else:
+            for dataFolder in dataFolders:
+                ifNotAvroThenLoadRaw(dataFolder)
     if args.format == 'parquet' and args.mode == 'write':
-        writeParquet(str(args.inputOption))
-    if args.format == 'sequence' and args.mode == 'write':
-        writeSeq(str(args.inputOption))
+        if args.source is not None:
+            ifNotParquetThenLoadRaw(str(args.source))
+        else:
+            for dataFolder in dataFolders:
+                ifNotParquetThenLoadRaw(dataFolder)
+    if args.format == 'raw' and args.mode == 'write':
+        if args.source is not None:
+            writeRaw(str(args.source))
+        else:
+            for dataFolder in dataFolders:
+                writeRaw(dataFolder)
+
+
     if args.format == 'avro' and args.mode == 'read':
         readAvro(str(args.readFile))
     if args.format == 'parquet' and args.mode == 'read':
         readParquet(str(args.readFile))
-    if args.format == 'sequence' and args.mode == 'read':
-        readSeq(str(args.readFile))
-
 

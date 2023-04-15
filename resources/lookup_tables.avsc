@@ -1,4 +1,4 @@
-{"namespace": "lookup.avro",
+{"namespace": "lookup_tables.avro",
  "type": "record",
  "name": "Lookup.json",
  "fields": [

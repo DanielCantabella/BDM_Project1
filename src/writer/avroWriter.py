@@ -58,14 +58,11 @@ def api2avro(data, schemaName):
         raise Exception(f"The directory {os.path.dirname(schemaFile)} does not exist. Please create it.")
     else:
         schema = avro.schema.parse(open(schemaFile, "rb").read())
-    # avro_output_file = io.BytesIO() # Create an in-memory file object
-    # datum_writer = avro.io.DatumWriter(schema) # Create an Avro DatumWriter
-    # avro_encoder = avro.io.BinaryEncoder(avro_output_file) # Create an Avro BinaryEncoder
+
     avro_output_file = io.BytesIO()  # Create an in-memory file object
     avro_writer = DataFileWriter(avro_output_file, avro.io.DatumWriter(), schema)
     # Parse JSON string
     for item in data:
-        # datum_writer.write(item, avro_encoder)
         avro_writer.append(item)
     avro_writer.flush()
     avro_output_file.seek(0)
@@ -74,9 +71,9 @@ def api2avro(data, schemaName):
     # Return the Avro content as bytes
     return avro_output_file_content
 
-def file2avro(inputArg, schemaName, rawDataFolderName, outputFolderName):
-    schemaFile = PROJECT_DIRECTORY + "/resources/" + schemaName + ".avsc"
-    dataFolder = PROJECT_DIRECTORY + "/data/" + rawDataFolderName
+def file2avro(source):
+    schemaFile = os.path.join(PROJECT_DIRECTORY, "resources", source + ".avsc")
+    dataFolder = os.path.join(PROJECT_DIRECTORY, "data", source)
 
     if not os.path.exists(dataFolder):
         raise Exception(f"The directory {dataFolder} does not exist. Please create it.")
@@ -84,7 +81,7 @@ def file2avro(inputArg, schemaName, rawDataFolderName, outputFolderName):
         raise Exception(f"The directory {os.path.dirname(schemaFile)} does not exist. Please create it.")
     else:
         schema = avro.schema.parse(open(schemaFile, "rb").read())
-        # schema = parse_schema(open(schemaFile, "rb").read())
+
 
     for filename in os.listdir(dataFolder):
         file = os.path.join(dataFolder, filename)
@@ -104,62 +101,38 @@ def file2avro(inputArg, schemaName, rawDataFolderName, outputFolderName):
                 else:
                     data = dataFile
                 for item in data:
-                    # datum_writer.write(item, avro_encoder)
                     avro_writer.append(item)
                 avro_writer.flush()
                 avro_output_file.seek(0)
-
-
-
                 avro_output_file_content =  avro_output_file.getvalue()
-
-                outputHDFSfolderName = HDFS_DIRECTORY + "avroFiles/"  + rawDataFolderName[:-1] + "%" + dataType + "%" + filename.split(".")[0] + "%" + date + "%" + time + ".avro"
-                # outputHDFSfolderName = HDFS_DIRECTORY + "avroFiles/" + outputFolderName +  filename.split(".")[0] + ".avro"
+                outputHDFSfolderName = HDFS_DIRECTORY  + source + "%" + dataType + "%" + filename.split(".")[0] + "%" + date + "%" + time + ".avro"
+                # outputHDFSfolderName = HDFS_DIRECTORY + "avroFiles/"  + source + "%" + dataType + "%" + filename.split(".")[0] + "%" + date + "%" + time + ".avro"
                 upload_memory_to_hdfs(avro_output_file_content, outputHDFSfolderName)
 
 
 
-def writeAvro(inputArg):
+def writeAvro(source):
 
-    if inputArg == "property":
-        schemaName = "property"
-        rawDataFolderName = outputFolderName = "idealista/"
-
-    elif inputArg == "income":
-        schemaName = "income"
-        rawDataFolderName = outputFolderName = "opendatabcn-income/"
-
-    elif inputArg == "lookup":
-        schemaName = "lookup"
-        rawDataFolderName = outputFolderName = "lookup_tables/"
-
-    elif inputArg == "immigration":
-        schemaName = "immigration"
-        outputFolderName = "opendatabcn-immigration/"
+    if source == "opendatabcn-immigration":
         fileUrls , filenames = getApiUrls('https://opendata-ajuntament.barcelona.cat/data/es/dataset/est-demo-taxa-immigracio/')
-
         for index, fileUrl in enumerate(fileUrls):
             apiData = getDataFromApiUrl(fileUrl)
             if apiData is None: #2018 data seems to not have an api option
                 continue
-            memoryFile = api2avro(apiData, schemaName)
-            outputHDFSfolderName = HDFS_DIRECTORY+"avroFiles/" + outputFolderName[:-1] + "%" + "json%" + filenames[index]+ ".avro"
-            # outputHDFSfolderName = HDFS_DIRECTORY+"avroFiles/" + outputFolderName + filenames[index]+ ".avro"
+            memoryFile = api2avro(apiData, source)
+            outputHDFSfolderName = HDFS_DIRECTORY + source + "%" + filenames[index]+ ".avro"
+            # outputHDFSfolderName = HDFS_DIRECTORY+"avroFiles/" + source + "%" + "json%" + filenames[index]+ ".avro"
             upload_memory_to_hdfs(memoryFile, outputHDFSfolderName)
-
-
-    if schemaName is None:
-        raise ValueError("Invalid inputArg provided")
-
-    if inputArg != "immigration":
-        file2avro(inputArg, schemaName, rawDataFolderName, outputFolderName)
+    else:
+        file2avro(source)
 
 
 
 
 if __name__ == '__main__':
-    writeAvro("immigration")
-    writeAvro("property")
-    writeAvro("income")
-    writeAvro("lookup")
+    # writeAvro("opendatabcn-immigration")
+    # writeAvro("idealista")
+    # writeAvro("opendatabcn-income")
+    # writeAvro("lookup_tables")
+    writeAvro("images")
 
