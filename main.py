@@ -34,24 +34,28 @@ def ifNotParquetThenLoadRaw(source):
 
 if __name__ == '__main__':
     dataFolders= os.listdir("./data")
+    apiOption = "opendatabcn-immigration"
     if args.format == 'avro' and args.mode == 'write':
         if args.source is not None:
             ifNotAvroThenLoadRaw(str(args.source))
         else:
             for dataFolder in dataFolders:
                 ifNotAvroThenLoadRaw(dataFolder)
+            ifNotAvroThenLoadRaw(apiOption) #API
     if args.format == 'parquet' and args.mode == 'write':
         if args.source is not None:
             ifNotParquetThenLoadRaw(str(args.source))
         else:
             for dataFolder in dataFolders:
                 ifNotParquetThenLoadRaw(dataFolder)
+            ifNotParquetThenLoadRaw(apiOption)
     if args.format == 'raw' and args.mode == 'write':
         if args.source is not None:
             writeRaw(str(args.source))
         else:
             for dataFolder in dataFolders:
                 writeRaw(dataFolder)
+            writeRaw(apiOption)
 
 
     if args.format == 'avro' and args.mode == 'read':

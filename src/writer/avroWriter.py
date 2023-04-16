@@ -120,7 +120,7 @@ def writeAvro(source):
             if apiData is None: #2018 data seems to not have an api option
                 continue
             memoryFile = api2avro(apiData, source)
-            outputHDFSfolderName = HDFS_DIRECTORY + source + "%" + filenames[index]+ ".avro"
+            outputHDFSfolderName = HDFS_DIRECTORY + source + "%" + "json%" + filenames[index]+ ".avro"
             # outputHDFSfolderName = HDFS_DIRECTORY+"avroFiles/" + source + "%" + "json%" + filenames[index]+ ".avro"
             upload_memory_to_hdfs(memoryFile, outputHDFSfolderName)
     else:
