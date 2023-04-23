@@ -1,21 +1,9 @@
-import avro.schema
-from avro.datafile import DataFileWriter
-from avro.io import DatumWriter
-import json
 import os
-import csv
 from src.utils.hdfsUtils import upload_file_to_hdfs
-from src.utils.hdfsUtils import delete_hdfs_folder
-import urllib.request
-import json
-import requests
-from bs4 import BeautifulSoup
 import io
 from src.utils.hdfsUtils import upload_memory_to_hdfs
-import time
 import datetime
-from src.writer.avroWriter import getApiUrls, getDataFromApiUrl, api2avro
-import pickle
+from src.writer.avroWriter import getApiUrls, getDataFromApiUrl
 
 # Directories
 PROJECT_DIRECTORY = os.environ.get('PROJECT_DIRECTORY')

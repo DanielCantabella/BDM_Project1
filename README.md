@@ -87,7 +87,7 @@ AQUI LO TUYO BRO <3
 # How to run the code
 To load both the temporal and persistent landing zones with the data, you just need to run [run.sh](run.sh). 
 Simply running it, the full pipeline is implemented. 
-This script basically runs [main.py](main.py) which is in charge of loading the temporal landing zone given some arguments in the console, and 
+This script basically runs [temporalLanding.py](temporalLanding.py) which is in charge of loading the temporal landing zone given some arguments in the console, and 
 [persistentLanding.py](persistentLanding.py), which loads data in the persistent landing zone. 
 The script tries to upload preferable Avro files in HDFS. In case it is not possible due to any reason (mainly because of a lack of a predefined schema), it loads the files in raw format.
     
@@ -95,7 +95,7 @@ The script tries to upload preferable Avro files in HDFS. In case it is not poss
 If you do not want to load Avro files but only the raw data, you can uncomment `UPLOAD RAW FILES TO HDFS` section in [run.sh](run.sh) and comment the `CREATE AND UPLOAD AVRO FILES` section.
 
 Here we show some instructions on how to run the different files in case it is preferred to run it in a different way.
-## How to run [main.py](main.py)
+## How to run [temporalLanding.py](temporalLanding.py)
 We have different options to load the data in HDFS. Before using them, remember to set properly the environment variables as in [run.sh](run.sh):
 ```{bash}
 export PROJECT_DIRECTORY="$PWD"
@@ -113,25 +113,25 @@ from the API, those files will be uploaded with no conversion. In our case we ha
 If we need to add new data from the same source but with a different schema, we will need to create a new folder with a new name (same as it would have the new schema) to save the new data.
 
 ```{bash}
-python main.py write avro
+python temporalLanding.py write avro
 ```
 2. Load specific local files. If you want to load only specific local data folders, you can do it by specifying the name of the folder your files are contained in.
 Same logic as in previous option is applied here.
 ```{bash}
-python main.py write avro -i idealista
+python temporalLanding.py write avro -i idealista
 ```
 ```{bash}
-python main.py write avro -i lookup_tables
+python temporalLanding.py write avro -i lookup_tables
 ```
 ```{bash}
-python main.py write avro -i opendatabcn-income
+python temporalLanding.py write avro -i opendatabcn-income
 ```
 ```{bash}
-python main.py write avro -i otherFiles
+python temporalLanding.py write avro -i otherFiles
 ```
 3. Load only data from the [API](https://opendata-ajuntament.barcelona.cat/data/es/dataset/est-demo-taxa-immigracio/). Same logic is applied here.
 ```{bash}
-python main.py write avro -i opendatabcn-immigration
+python temporalLanding.py write avro -i opendatabcn-immigration
 ```
 ### Options to load raw format files
 1. Load all data in HDFS. This option loads all local files in [data](data) and loads the data collected from the
@@ -139,32 +139,32 @@ python main.py write avro -i opendatabcn-immigration
 Using this option, files are loaded in raw format (e.g., CSV, JSON, etc.)
 
 ```{bash}
-python main.py write raw
+python temporalLanding.py write raw
 ```
 2. Load specific local files. If you want to load only specific local data folders, you can do it by specifying the name of the folder your files are contained in.
 ```{bash}
-python main.py write raw -i idealista
+python temporalLanding.py write raw -i idealista
 ```
 ```{bash}
-python main.py write raw -i lookup_tables
+python temporalLanding.py write raw -i lookup_tables
 ```
 ```{bash}
-python main.py write raw -i opendatabcn-income
+python temporalLanding.py write raw -i opendatabcn-income
 ```
 ```{bash}
-python main.py write raw -i otherFiles
+python temporalLanding.py write raw -i otherFiles
 ```
 3. Load only data from the [API](https://opendata-ajuntament.barcelona.cat/data/es/dataset/est-demo-taxa-immigracio/). 
 ```{bash}
-python main.py write raw -i opendatabcn-immigration
+python temporalLanding.py write raw -i opendatabcn-immigration
 ```
 NOTE: Files from [reader](src%2Freader) are not used in our pipeline, they are simply readers for Avro and Parquet files (in case you have them saved locally) that have been useful to work with.
 They can be used as:
 ```{bash}
-python main.py read avro -r <localAvroFilePath>
+python temporalLanding.py read avro -r <localAvroFilePath>
 ```
 ```{bash}
-python main.py read parquet -r <localParquetFilePath>
+python temporalLanding.py read parquet -r <localParquetFilePath>
 ```
 ## How to run [persistentLanding.py](persistentLanding.py)
 NO SE SI TENDRAS ALGO PARA PONER AQUI, SINO PON ALGO SIMLPE QUE SE EJECUTA POR SI SOLO.

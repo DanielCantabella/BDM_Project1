@@ -1,22 +1,15 @@
 import avro.schema
-from avro.datafile import DataFileWriter
-from avro.io import DatumWriter
-import json
 import os
 import csv
-from src.utils.hdfsUtils import upload_file_to_hdfs
-from src.utils.hdfsUtils import delete_hdfs_folder
 import urllib.request
 import json
 import requests
 from bs4 import BeautifulSoup
 import io
 from src.utils.hdfsUtils import upload_memory_to_hdfs
-import time
 import datetime
-from fastavro import writer, parse_schema
 from avro.datafile import DataFileWriter
-import datafile
+
 
 # Directories
 PROJECT_DIRECTORY = os.environ.get('PROJECT_DIRECTORY')
@@ -106,7 +99,6 @@ def file2avro(source):
                 avro_output_file.seek(0)
                 avro_output_file_content =  avro_output_file.getvalue()
                 outputHDFSfolderName = HDFS_DIRECTORY  + source + "%" + dataType + "%" + filename.split(".")[0] + "%" + date + "%" + time + ".avro"
-                # outputHDFSfolderName = HDFS_DIRECTORY + "avroFiles/"  + source + "%" + dataType + "%" + filename.split(".")[0] + "%" + date + "%" + time + ".avro"
                 upload_memory_to_hdfs(avro_output_file_content, outputHDFSfolderName)
 
 
@@ -129,10 +121,10 @@ def writeAvro(source):
 
 
 
-if __name__ == '__main__':
-    # writeAvro("opendatabcn-immigration")
-    # writeAvro("idealista")
-    # writeAvro("opendatabcn-income")
-    # writeAvro("lookup_tables")
-    writeAvro("images")
+# if __name__ == '__main__':
+#     # writeAvro("opendatabcn-immigration")
+#     # writeAvro("idealista")
+#     # writeAvro("opendatabcn-income")
+#     # writeAvro("lookup_tables")
+#     writeAvro("images")
 
