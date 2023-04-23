@@ -3,7 +3,7 @@
 <p align="center"><img src="./pipeline.png" alt="Pipeline image" title="Pipeline image"/></p>
 <p align="center"><em>Pipeline diagram we implemented</em></p>
 
-## Temporal landing zone
+## Temporal Landing Zone
 The pipeline our data follows when is added into the temporal landing zone is the following one:
 
 Data Collectors:
@@ -82,7 +82,78 @@ able to save different versions of the files by adding their modification timest
    (i.e., at the same second) in different servers, only the first version to be loaded in HDFS will be kept.
 
 ## Persistent Landing Zone
-AQUI LO TUYO BRO <3
+#### Main structure
+- The data would be stored in one big table called `datalake`, and would store each file as a table entry (row)
+- Justification
+  - Because of the flexibility that HBase gives, there was no need to have more than one table, and also all of the files would be easily accessible because of how the key is defined
+#### Key design:
+- Format: 
+  `source$fileFormat$orginalFilename$modificationTimeStamp`
+- Example: `opendatabcn-income$csv$2016_Distribucio_territorial_renda_familiar$2021-03-10T09-54-21`
+- Justification:
+  - It was needed to track the ingested files easily by their data source, so it is specified, the version of the file, that can be done using the filename and by the different modification times the different versions can be checked, and we also considered important to be able to track by the file format to maybe in the next zones separate files by this criteria, this can be useful for example to apply different preprocessing to each file type
+  - Modification time was considered as an alternative of registering the loading time to avoid the creation of a hotspot in this region
+
+#### Families structure:
+- There are two column families defined:
+  - `data`: contains the file
+  - `metadata`: contains the file information, in this case it would contain the file schema
+
+#### Data Persistent Loader:
+The pipeline it follows is:
+
+1. Connects to the HDFS server, using the hdfs python library, and sets the source path route as  `/user/bdm/Temporal_LZ`, so everything in that file would be loaded
+2. Connects to the HBase server, using the happybase python library
+
+    **_NOTE:_** to be able to connect to the HBase server it was needed to have the database started:
+    ```shell 
+   /BDM_Software/hbase/bin/start-hbase.sh 
+   ```
+    And then execute the following command, to start the thrift server daemon and be able to connect to it:
+    ```shell
+   /hbase-daemon.sh start thrift
+   ```
+3. In the HBase connection it checks if the table with the name defined in the `config.cfg` file (in this case `datalake`) exists, and if not, it creates it, defining two column families, `data` and `metadata`.
+4. The Data Persistent Loader reads each file stored on the temporal zone, to do this first it analyzes the file extension and it has two choices:
+
+   1. For Avro files:
+      1. Generates the key using the file name: `source$fileFormat$orginalFilename$modificationTimeStamp```
+      2. Read the avro file, creates a dictionary for the entry value, where it saves the file content as a list of jsons and the file schema
+
+            **_NOTES:_**  
+         - The file content is saved as a list of jsons to facilitate its encoding to be able to be inserted into the HBase table
+         - The key of each part of the value content has to contain the column family where it belongs, for the file content it has to be in the data cf, so it would be `data:file`, and for the schema it would be `metadata:schema`, leaving the json like this:
+         ```json lines
+             {"data:file" : {...}, "metadata:schema": {...}}
+         ```
+
+      3. Creates a dictionary, using the generated key and the dictionary of the entry value, and inserts it into the HBase table
+      
+            **_NOTE:_** Each entry of the HBase table corresponds to a file, and would look like this:
+            ```json lines
+            {"source$fileFormat$orginalFilename$modificationTimeStamp" : {"data:file" : {...}, "metadata:schema": {...}} }
+         ```
+   2. For raw files (any other extension different from avro):
+      1. Generates the key using the file name: `source$fileFormat$orginalFilename$modificationTimeStamp`
+      2. Creates a dictionary for the entry value, opens the file contents and saves it with no modification in the dictionary
+         
+           **_NOTES:_** 
+         
+         - Thinking in a real life case, there is no method that guarantees a correct extraction of the schema from any file, since sometimes this will not be explicit in the file, so for the raw files it would not be saved, leaving the json like this:
+         ```json lines
+             {"data:file" : {...} }
+         ```
+         - Here it can be seen the usefulness of the key-value storage because of its versatility, the two types of entries seen would be inserted to the same table
+      3. Creates a dictionary, using the generated key and the dictionary of the entry value, and inserts it into the HBase table
+
+         **_NOTE:_** Each entry of the HBase table corresponds to a file, and would look like this:
+         ```json lines
+            {"source$fileFormat$orginalFilename$modificationTimeStamp" : {"data:file" : {...}} }
+         ```
+5. Everytime this pipeline is executed new data would be inserted and the repeated one would be overwritten, because the HBase system would check it using the generated key, and as we use modification time and no loading time there would not be duplicated data, but version control is handled
+
+    **_NOTE:_**  Also in a real life situation the Temporal Landing would be purged from time to time, so there would not be many cases that the data could be repeated
+
 
 # How to run the code
 To load both the temporal and persistent landing zones with the data, you just need to run [run.sh](run.sh). 
@@ -91,6 +162,12 @@ This script basically runs [temporalLanding.py](temporalLanding.py) which is in 
 [persistentLanding.py](persistentLanding.py), which loads data in the persistent landing zone. 
 The script tries to upload preferable Avro files in HDFS. In case it is not possible due to any reason (mainly because of a lack of a predefined schema), it loads the files in raw format.
     
+### Configurations:
+The project contains a [config.cfg](src%2Futils%2Fconfig.cfg) file, where important constants are set:
+- The VM server information
+- The path of the zones
+- Configuration names, such as table names
+
 **_NOTE:_** If you need to install some modules you can run the `pip install -r requirements.txt` command on top of [run.sh](run.sh) script. 
 If you do not want to load Avro files but only the raw data, you can uncomment `UPLOAD RAW FILES TO HDFS` section in [run.sh](run.sh) and comment the `CREATE AND UPLOAD AVRO FILES` section.
 
@@ -167,7 +244,11 @@ python temporalLanding.py read avro -r <localAvroFilePath>
 python temporalLanding.py read parquet -r <localParquetFilePath>
 ```
 ## How to run [persistentLanding.py](persistentLanding.py)
-NO SE SI TENDRAS ALGO PARA PONER AQUI, SINO PON ALGO SIMLPE QUE SE EJECUTA POR SI SOLO.
+The Data Persistent Loader code reads each file stored on the temporal zone, on the defined route, and loads it all to 
+the persistent landing zone, so there are no major settings to do, so the file does not require parameters, and can 
+be executed like this:
 
-
+```{bash}
+python persistentLanding.py
+```
 

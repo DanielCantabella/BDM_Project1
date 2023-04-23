@@ -48,15 +48,17 @@ def read_avro_and_insert_hbase(client, table, path):
 
 def read_raw_and_insert_hbase(client, table, path):
     # generate key
-    info = path.split("/")
-    info_list = info[-1].split('%')
-    source = info[-2]
-    if 'rawFiles' in source:
-        return
-    full_fn = info_list[-1].split('.')
-    file_name = full_fn[0]
-    ext = full_fn[1]
-    row_key = '$'.join([source, ext, file_name])
+    info_list = path.split('.')[0].split("/")[-1].split("%")
+    source = info_list[0]
+    ext = path.split('.')[-1]
+    file_name = info_list[1]
+    if len(info_list) < 4:
+        # For the API data
+        now = datetime.now()
+        vtime = now.strftime("%Y-%m-%dT%H-%M-%S")
+    else:
+        vtime = f"{info_list[2]}T{info_list[3]}"
+    row_key = '$'.join([source, ext, file_name, vtime])
     with client.read(path) as f:
         file_contents = f.read()
         # get value
@@ -117,6 +119,8 @@ if __name__ == '__main__':
     # Load tables from temporal to persistent landing
     create_table_if_not_exists(connection, tablename)
     table = connection.table(tablename)
+
+    # # Read and insert the files
     read_hdfs_and_insert_hbase(client, table, hdfs_path)
 
     # # Print table content
