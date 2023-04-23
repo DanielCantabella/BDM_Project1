@@ -13,20 +13,12 @@ python main.py write avro
 echo "All files from ${PROJECT_DIRECTORY}/data have been uploaded to HDFS path: ${HDFS_DIRECTORY}"
 echo "Files that could not be uploaded as Avro files have been uploaded in their original format"
 #
-# _____________UPLOAD RAW FILES TO HDFS______________________
-echo "==================================================================================="
-echo "UPLOADING RAW FILES IN HDFS..."
-python main.py write raw
-echo "Raw data files from ${PROJECT_DIRECTORY}/data uploaded in HDFS path: ${HDFS_DIRECTORY}"
-
-
-## _____________CREATE AND UPLOAD PARQUET FILES______________________
+## _____________UPLOAD RAW FILES TO HDFS______________________
 #echo "==================================================================================="
-#echo "CREATING AND LOADING PARQUET FILES IN HDFS..."
-#python main.py write parquet
-#echo "All files from ${PROJECT_DIRECTORY}/data have been uploaded to HDFS path: ${HDFS_DIRECTORY}"
-#echo "Files that could not be uploaded as Parquet files have been uploaded in their original format"
-##
+#echo "UPLOADING RAW FILES IN HDFS..."
+#python main.py write raw
+#echo "Raw data files from ${PROJECT_DIRECTORY}/data uploaded in HDFS path: ${HDFS_DIRECTORY}"
+
 
 ## _____________LOAD FILES FROM TEMPORAL TO PERSISTENT LANDING ZONE______________________
 echo "==================================================================================="
