@@ -1,16 +1,12 @@
 from src.writer.avroWriter import writeAvro
-from src.writer.parquetWriter import writeParquet
-from src.writer.sequenceFileWriter import writeSeq
 from src.reader.avroReader import readAvro
 from src.reader.parquetReader import readParquet
-from src.reader.sequenceReader import readSeq
 from src.writer.rawWriter import writeRaw
 import os
 import argparse
 
 
 parser = argparse.ArgumentParser()
-# writeGroup = parser.add_mutually_exclusive_group()
 parser.add_argument('mode', choices=['write', 'read'], help='Choose write or read mode')
 parser.add_argument('format', choices=['avro', 'raw'], help='Choose avro or raw formats')
 parser.add_argument('-i', '--source', help='Input file options: {opendatabcn-income, idealista, lookup_tables, opendatabcn-immigration}')
