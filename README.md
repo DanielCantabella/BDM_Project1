@@ -9,11 +9,15 @@ The pipeline our data follows when is added into the temporal landing zone is th
 Data Collectors:
 
 1. We manually download the Idealista, OpenData BCN and lookup files into our local machine. You can find all the files in [data](data) folder.
-In this case, we assume saving them locally is not a problem due to the small number of files.
+In this case, we assume saving them locally is not a problem due to the small number of files. In case we had huge amounts of data, we should 
+send the data directly from the source to HDFS as we do in step 2.
 
 
 2. We automatically collect data about immigration from the API of OpenData BCN. This data comes from 
-[here](https://opendata-ajuntament.barcelona.cat/data/es/dataset/est-demo-taxa-immigracio/).
+[here](https://opendata-ajuntament.barcelona.cat/data/es/dataset/est-demo-taxa-immigracio/). The data presented provides
+information on the immigration rate by neighborhood in Barcelona each year, with new reports added annually. These data 
+were selected for potential analyses related to rental prices based on the neighborhood and the level of immigration 
+typically observed in those areas.
 
    * For each year we have a different API request, so we automatically scrap all available URLs and get all JSON files 
    for the different available years.
@@ -156,6 +160,16 @@ The pipeline it follows is:
 
 
 # How to run the code
+Before starting the loading of the data, is important to first start HDFS in our local machine:
+```{bash}
+/home/bdm/BDM_Software/hadoop/sbin/start-dfs.sh
+```
+The Temporal Landing Zone directory where we work is going to be on the `/user/bdm` folder in HDFS, so first of all we need to create it:
+```{bash}
+~/BDM_Software/hadoop/bin/hdfs dfs -mkdir /user
+~/BDM_Software/hadoop/bin/hdfs dfs -mkdir /user/bdm 
+~/BDM_Software/hadoop/bin/hdfs dfs -chmod -R 777 /user/bdm/
+```
 To load both the temporal and persistent landing zones with the data, you just need to run [run.sh](run.sh). 
 Simply running it, the full pipeline is implemented. 
 This script basically runs [temporalLanding.py](temporalLanding.py) which is in charge of loading the temporal landing zone given some arguments in the console, and 
