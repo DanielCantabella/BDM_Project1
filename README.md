@@ -170,8 +170,8 @@ The Temporal Landing Zone directory where we work is going to be on the `/user/b
 ~/BDM_Software/hadoop/bin/hdfs dfs -mkdir /user/bdm 
 ~/BDM_Software/hadoop/bin/hdfs dfs -chmod -R 777 /user/bdm/
 ```
-To load both the temporal and persistent landing zones with the data, you just need to run [run.sh](run.sh). 
-Simply running it, the full pipeline is implemented. 
+To load both the temporal and persistent landing zones with the data, you just need to run [run.sh](run.sh).
+Simply running it, the full pipeline is implemented. You could see that temporal landing zone files will be stored at `/user/bdm/Temporal_LZ` directory.
 This script basically runs [temporalLanding.py](temporalLanding.py) which is in charge of loading the temporal landing zone given some arguments in the console, and 
 [persistentLanding.py](persistentLanding.py), which loads data in the persistent landing zone. 
 The script tries to upload preferable Avro files in HDFS. In case it is not possible due to any reason (mainly because of a lack of a predefined schema), it loads the files in raw format.
