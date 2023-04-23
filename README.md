@@ -158,7 +158,7 @@ python temporalLanding.py write raw -i otherFiles
 ```{bash}
 python temporalLanding.py write raw -i opendatabcn-immigration
 ```
-NOTE: Files from [reader](src%2Freader) are not used in our pipeline, they are simply readers for Avro and Parquet files (in case you have them saved locally) that have been useful to work with.
+**_NOTE_**: Files from [reader](src%2Freader) are not used in our pipeline, they are simply readers for Avro and Parquet files (in case you have them saved locally) that have been useful to work with.
 They can be used as:
 ```{bash}
 python temporalLanding.py read avro -r <localAvroFilePath>
